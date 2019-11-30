@@ -52,8 +52,6 @@ class WebkitRenderer(QObject):
         """
         Sets default values for the properties.
         """
-        # UserAgents
-        self.user_agents = []
 
         # QT Initialize
         if not QApplication.instance():
@@ -88,12 +86,6 @@ class WebkitRenderer(QObject):
             QWebEngineSettings.PluginsEnabled: False,
             QWebEngineSettings.JavascriptCanOpenWindows: False
         }
-
-    def add_user_agent(self, user_agent_string):
-        self.user_agents.append(user_agent_string)
-
-    def del_user_agent(self, user_agent_string):
-        self.user_agents.remove(user_agent_string)
 
     def render(self, res):
         """
