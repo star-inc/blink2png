@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
-version = '0.8.3'
+version = '0.9.0'
 
-description = "Takes snapshot of web pages using Webkit and Qt4"
+description = "Takes snapshot of web pages using Webkit and Qt5"
 long_description = description
 
 setup(
@@ -36,5 +36,5 @@ setup(
         'console_scripts': [
             'webkit2png = webkit2png.scripts:main',
         ]
-    }, install_requires=['PyQt5']
+    }, install_requires=['PyQt5', 'sip']
 )

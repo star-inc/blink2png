@@ -74,7 +74,7 @@ def main():
 
     # Enable HTTP proxy
     if 'http_proxy' in os.environ:
-        proxy_url = urllib.parse.urljoin(os.environ.get('http_proxy'))
+        proxy_url = urllib.parse.urlparse(os.environ.get('http_proxy'))
         proxy = QNetworkProxy(QNetworkProxy.HttpProxy, proxy_url.hostname, proxy_url.port)
         QNetworkProxy.setApplicationProxy(proxy)
 
