@@ -27,7 +27,7 @@ import _io
 import os
 import time
 
-from PyQt5 import sip
+import PyQt5.sip as sip
 from PyQt5.QtCore import QObject, QUrl, Qt, QCoreApplication, QByteArray, QBuffer, pyqtSlot
 from PyQt5.QtGui import QPalette, QImage, QColor, QPainter, QGuiApplication
 from PyQt5.QtNetwork import QNetworkCookieJar, QNetworkCookie, QNetworkProxy, QNetworkAccessManager, QNetworkReply
@@ -55,7 +55,8 @@ class WebkitRenderer(QObject):
 
         # QT Initialize
         if not QApplication.instance():
-            raise RuntimeError(self.__class__.__name__ + " requires a running QApplication instance")
+            raise RuntimeError(self.__class__.__name__ +
+                               " requires a running QApplication instance")
         QObject.__init__(self)
 
         # Initialize default properties
@@ -73,7 +74,8 @@ class WebkitRenderer(QObject):
         # Not that your desktop must be large enough for
         # fitting the whole window.
         self.grabWholeWindow = kwargs.get('grabWholeWindow', False)
-        self.renderTransparentBackground = kwargs.get('renderTransparentBackground', False)
+        self.renderTransparentBackground = kwargs.get(
+            'renderTransparentBackground', False)
         self.ignoreAlert = kwargs.get('ignoreAlert', True)
         self.ignoreConfirm = kwargs.get('ignoreConfirm', True)
         self.ignorePrompt = kwargs.get('ignorePrompt', True)
@@ -132,7 +134,8 @@ class CookieJar(QNetworkCookieJar):
     def __init__(self, cookies, qt_url, parent=None):
         QNetworkCookieJar.__init__(self, parent)
         for cookie in cookies:
-            QNetworkCookieJar.setCookiesFromUrl(self, QNetworkCookie.parseCookies(QByteArray(cookie)), qt_url)
+            QNetworkCookieJar.setCookiesFromUrl(
+                self, QNetworkCookie.parseCookies(QByteArray(cookie)), qt_url)
 
     def allCookies(self):
         return QNetworkCookieJar.allCookies(self)
@@ -340,9 +343,11 @@ class _WebkitRendererHelper(QObject):
                 ratio = Qt.KeepAspectRatioByExpanding
             else:  # 'ignore'
                 ratio = Qt.IgnoreAspectRatio
-            q_image = q_image.scaled(self.scaleToWidth, self.scaleToHeight, ratio, Qt.SmoothTransformation)
+            q_image = q_image.scaled(
+                self.scaleToWidth, self.scaleToHeight, ratio, Qt.SmoothTransformation)
             if self.scaleRatio == 'crop':
-                q_image = q_image.copy(0, 0, self.scaleToWidth, self.scaleToHeight)
+                q_image = q_image.copy(
+                    0, 0, self.scaleToWidth, self.scaleToHeight)
         return q_image
 
     @pyqtSlot(QNetworkReply, name='finished')

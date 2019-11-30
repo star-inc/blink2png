@@ -36,5 +36,5 @@ setup(
         'console_scripts': [
             'webkit2png = webkit2png.scripts:main',
         ]
-    }, install_requires=['PyQt5', 'sip']
+    }, install_requires=['PyQt5']
 )
