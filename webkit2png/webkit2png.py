@@ -23,21 +23,6 @@
 #  - Add QTcpSocket support to create a "screenshot daemon" that
 #    can handle multiple requests at the same time.
 
-#   Third Party Update by SuperSonic to update for PB Project
-#
-#   Modified according to GNU General Public License
-#   Copyright(c) 2019 SuperSonic(https://randychen.tk)
-#
-#   ChangeLog:
-#       Drop support for Qt 4
-#       Drop support for Python 2.x
-#       Support Qt 5
-#       Support Python3
-#       User-Agent Selection
-#
-#   More Information:
-#   https://github.com/supersonictw/PBP-analytics
-
 import _io
 import os
 import time
