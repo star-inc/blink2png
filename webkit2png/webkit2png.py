@@ -23,30 +23,54 @@
 #  - Add QTcpSocket support to create a "screenshot daemon" that
 #    can handle multiple requests at the same time.
 
-import time
+#   Third Party Update by SuperSonic to update for PB Project
+#
+#   Modified according to GNU General Public License
+#   Copyright(c) 2019 SuperSonic(https://randychen.tk)
+#
+#   ChangeLog:
+#       Drop support for Qt 4
+#       Drop support for Python 2.x
+#       Support Qt 5
+#       Support Python3
+#       User-Agent Selection
+#
+#   More Information:
+#   https://github.com/supersonictw/PBP-analytics
+
+import _io
 import os
+import time
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4.QtWebKit import *
-from PyQt4.QtNetwork import *
+from PyQt5 import sip
+from PyQt5.QtCore import QObject, QUrl, Qt, QCoreApplication, QByteArray, QBuffer, pyqtSlot
+from PyQt5.QtGui import QPalette, QImage, QColor, QPainter, QGuiApplication
+from PyQt5.QtNetwork import QNetworkCookieJar, QNetworkCookie, QNetworkProxy, QNetworkAccessManager, QNetworkReply
+from PyQt5.QtWebEngineWidgets import QWebEngineSettings, QWebEnginePage, QWebEngineView
+from PyQt5.QtWidgets import QApplication, QMainWindow, QAbstractScrollArea
 
-# Class for Website-Rendering. Uses QWebPage, which
+
+# Class for Website-Rendering. Uses QtWebEngine, which
 # requires a running QtGui to work.
+
+
 class WebkitRenderer(QObject):
     """
-    A class that helps to create 'screenshots' of webpages using
-    Qt's QWebkit. Requires PyQt4 library.
-
+    A class that helps to create 'screenshots' of web pages using
+    Requires PyQt5 library.
     Use "render()" to get a 'QImage' object, render_to_bytes() to get the
     resulting image as 'str' object or render_to_file() to write the image
     directly into a 'file' resource.
     """
-    def __init__(self,**kwargs):
+
+    def __init__(self, **kwargs):
         """
         Sets default values for the properties.
         """
+        # UserAgents
+        self.user_agents = []
 
+        # QT Initialize
         if not QApplication.instance():
             raise RuntimeError(self.__class__.__name__ + " requires a running QApplication instance")
         QObject.__init__(self)
@@ -61,7 +85,7 @@ class WebkitRenderer(QObject):
         self.scaleRatio = kwargs.get('scaleRatio', 'keep')
         self.format = kwargs.get('format', 'png')
         self.logger = kwargs.get('logger', None)
-        
+
         # Set this to true if you want to capture flash.
         # Not that your desktop must be large enough for
         # fitting the whole window.
@@ -74,14 +98,17 @@ class WebkitRenderer(QObject):
         self.encodedUrl = kwargs.get('encodedUrl', False)
         self.cookies = kwargs.get('cookies', [])
 
-        # Set some default options for QWebPage
         self.qWebSettings = {
-            QWebSettings.JavascriptEnabled : False,
-            QWebSettings.PluginsEnabled : False,
-            QWebSettings.PrivateBrowsingEnabled : True,
-            QWebSettings.JavascriptCanOpenWindows : False
+            QWebEngineSettings.JavascriptEnabled: False,
+            QWebEngineSettings.PluginsEnabled: False,
+            QWebEngineSettings.JavascriptCanOpenWindows: False
         }
 
+    def add_user_agent(self, user_agent_string):
+        self.user_agents.append(user_agent_string)
+
+    def del_user_agent(self, user_agent_string):
+        self.user_agents.remove(user_agent_string)
 
     def render(self, res):
         """
@@ -91,7 +118,7 @@ class WebkitRenderer(QObject):
         # QApplication.processEvents may be called, causing
         # this method to get called while it has not returned yet.
         helper = _WebkitRendererHelper(self)
-        helper._window.resize( self.width, self.height )
+        helper.window.resize(self.width, self.height)
         image = helper.render(res)
 
         # Bind helper instance to this image to prevent the
@@ -106,33 +133,36 @@ class WebkitRenderer(QObject):
         Renders the image into a File resource.
         Returns the size of the data that has been written.
         """
-        format = self.format # this may not be constant due to processEvents()
+        assert type(file_object) is _io.BufferedRandom, "Not a file object"
+        qt_format = self.format  # this may not be constant due to processEvents()
         image = self.render(res)
-        qBuffer = QBuffer()
-        image.save(qBuffer, format)
-        file_object.write(qBuffer.buffer().data())
-        return qBuffer.size()
+        q_buffer = QBuffer()
+        image.save(q_buffer, qt_format)
+        file_object.write(q_buffer.buffer().data())
+        return q_buffer.size()
 
     def render_to_bytes(self, res):
         """Renders the image into an object of type 'str'"""
-        format = self.format # this may not be constant due to processEvents()
+        qt_format = self.format  # this may not be constant due to processEvents()
         image = self.render(res)
-        qBuffer = QBuffer()
-        image.save(qBuffer, format)
-        return qBuffer.buffer().data()
+        q_buffer = QBuffer()
+        image.save(q_buffer, qt_format)
+        return q_buffer.buffer().data()
 
-## @brief The CookieJar class inherits QNetworkCookieJar to make a couple of functions public.
+
+# @brief The CookieJar class inherits QNetworkCookieJar to make a couple of functions public.
 class CookieJar(QNetworkCookieJar):
-	def __init__(self, cookies, qtUrl, parent=None):
-		QNetworkCookieJar.__init__(self, parent)
-		for cookie in cookies:
-			QNetworkCookieJar.setCookiesFromUrl(self, QNetworkCookie.parseCookies(QByteArray(cookie)), qtUrl)
+    def __init__(self, cookies, qt_url, parent=None):
+        QNetworkCookieJar.__init__(self, parent)
+        for cookie in cookies:
+            QNetworkCookieJar.setCookiesFromUrl(self, QNetworkCookie.parseCookies(QByteArray(cookie)), qt_url)
 
-	def allCookies(self):
-		return QNetworkCookieJar.allCookies(self)
-	
-	def setAllCookies(self, cookieList):
-		QNetworkCookieJar.setAllCookies(self, cookieList)
+    def allCookies(self):
+        return QNetworkCookieJar.allCookies(self)
+
+    def setAllCookies(self, cookie1_list):
+        QNetworkCookieJar.setAllCookies(self, cookie1_list)
+
 
 class _WebkitRendererHelper(QObject):
     """
@@ -150,14 +180,14 @@ class _WebkitRendererHelper(QObject):
         QObject.__init__(self)
 
         # Copy properties from parent
-        for key,value in parent.__dict__.items():
-            setattr(self,key,value)
+        for key, value in parent.__dict__.items():
+            setattr(self, key, value)
 
         # Determine Proxy settings
         proxy = QNetworkProxy(QNetworkProxy.NoProxy)
         if 'http_proxy' in os.environ:
             proxy_url = QUrl(os.environ['http_proxy'])
-            if unicode(proxy_url.scheme()).startswith('http'):
+            if proxy_url.scheme().startswith('http'):
                 protocol = QNetworkProxy.HttpProxy
             else:
                 protocol = QNetworkProxy.Socks5Proxy
@@ -170,37 +200,40 @@ class _WebkitRendererHelper(QObject):
                 proxy_url.password()
             )
 
-        # Create and connect required PyQt4 objects
+        # Create and connect required PyQt5 objects
         self._page = CustomWebPage(logger=self.logger, ignore_alert=self.ignoreAlert,
-            ignore_confirm=self.ignoreConfirm, ignore_prompt=self.ignorePrompt,
-            interrupt_js=self.interruptJavaScript)
-        self._page.networkAccessManager().setProxy(proxy)
-        self._view = QWebView()
+                                   ignore_confirm=self.ignoreConfirm, ignore_prompt=self.ignorePrompt,
+                                   interrupt_js=self.interruptJavaScript)
+        self._qt_proxy = QNetworkProxy()
+        self._qt_proxy.setApplicationProxy(proxy)
+        self._view = QWebEngineView()
         self._view.setPage(self._page)
         self._window = QMainWindow()
         self._window.setCentralWidget(self._view)
+        self._qt_network_access_manager = QNetworkAccessManager()
 
         # Import QWebSettings
-        for key, value in self.qWebSettings.iteritems():
+        for key, value in self.qWebSettings.items():
             self._page.settings().setAttribute(key, value)
 
         # Connect required event listeners
-        self.connect(self._page, SIGNAL("loadFinished(bool)"), self._on_load_finished)
-        self.connect(self._page, SIGNAL("loadStarted()"), self._on_load_started)
-        self.connect(self._page.networkAccessManager(), SIGNAL("sslErrors(QNetworkReply *,const QList<QSslError>&)"), self._on_ssl_errors)
-        self.connect(self._page.networkAccessManager(), SIGNAL("finished(QNetworkReply *)"), self._on_each_reply)
+        # assert False, "Not finish"
+        self._page.loadFinished.connect(self._on_load_finished)
+        self._page.loadStarted.connect(self._on_load_started)
+        self._qt_network_access_manager.sslErrors.connect(self._on_ssl_errors)
+        self._qt_network_access_manager.finished.connect(self._on_each_reply)
 
-        # The way we will use this, it seems to be unesseccary to have Scrollbars enabled
-        self._page.mainFrame().setScrollBarPolicy(Qt.Horizontal, Qt.ScrollBarAlwaysOff)
-        self._page.mainFrame().setScrollBarPolicy(Qt.Vertical, Qt.ScrollBarAlwaysOff)
-        self._page.settings().setUserStyleSheetUrl(QUrl("data:text/css,html,body{overflow-y:hidden !important;}"))
+        # The way we will use this, it seems to be unnecessary to have Scrollbars enabled
+        self._scroll_area = QAbstractScrollArea()
+        self._scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self._scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         # Show this widget
         self._window.show()
 
     def __del__(self):
         """
-        Clean up Qt4 objects.
+        Clean up Qt5 objects.
         """
         self._window.close()
         del self._window
@@ -213,23 +246,24 @@ class _WebkitRendererHelper(QObject):
         the end of the given 'delay'. While it is waiting outstanding
         QApplication events are processed.
         After the given delay, the Window or Widget (depends
-        on the value of 'grabWholeWindow' is drawn into a QPixmap
-        and postprocessed (_post_process_image).
+        on the value of 'grabWholeWindow' is drawn into a QScreen
+        and post processed (_post_process_image).
         """
         self._load_page(res, self.width, self.height, self.timeout)
         # Wait for end of timer. In this time, process
         # other outstanding Qt events.
         if self.wait > 0:
-            if self.logger: self.logger.debug("Waiting %d seconds " % self.wait)
-            waitToTime = time.time() + self.wait
-            while time.time() < waitToTime:
+            if self.logger:
+                self.logger.debug("Waiting {} seconds ".format(self.wait))
+            wait_to_time = time.time() + self.wait
+            while time.time() < wait_to_time:
                 if QApplication.hasPendingEvents():
                     QApplication.processEvents()
 
         if self.renderTransparentBackground:
             # Another possible drawing solution
             image = QImage(self._page.viewportSize(), QImage.Format_ARGB32)
-            image.fill(QColor(255,0,0,0).rgba())
+            image.fill(QColor(255, 0, 0, 0).rgba())
 
             # http://ariya.blogspot.com/2009/04/transparent-qwebview-and-qwebpage.html
             palette = self._view.palette()
@@ -239,7 +273,7 @@ class _WebkitRendererHelper(QObject):
 
             painter = QPainter(image)
             painter.setBackgroundMode(Qt.TransparentMode)
-            self._page.mainFrame().render(painter)
+            self._window.render(painter)
             painter.end()
         else:
             if self.grabWholeWindow:
@@ -247,9 +281,10 @@ class _WebkitRendererHelper(QObject):
                 # window still has the focus when the screen is
                 # grabbed. This might result in a race condition.
                 self._view.activateWindow()
-                image = QPixmap.grabWindow(self._window.winId())
+                qt_screen = QGuiApplication.primaryScreen()
+                image = qt_screen.grabWindow(sip.voidptr(0))
             else:
-                image = QPixmap.grabWidget(self._window)
+                image = self._window.grab()
 
         return self._post_process_image(image)
 
@@ -261,57 +296,60 @@ class _WebkitRendererHelper(QObject):
 
         # This is an event-based application. So we have to wait until
         # "loadFinished(bool)" raised.
-        cancelAt = time.time() + timeout
+        cancel_at = time.time() + timeout
         self.__loading = True
-        self.__loadingResult = False # Default
+        self.__loadingResult = False  # Default
 
         # When "res" is of type tuple, it has two elements where the first
         # element is the HTML code to render and the second element is a string
         # setting the base URL for the interpreted HTML code.
         # When resource is of type str or unicode, it is handled as URL which
-        # shal be loaded
+        # shall be loaded
         if type(res) == tuple:
             url = res[1]
         else:
             url = res
 
         if self.encodedUrl:
-            qtUrl = QUrl.fromEncoded(url)
+            qt_url = QUrl.fromEncoded(url)
         else:
-            qtUrl = QUrl(url)
+            qt_url = QUrl(url)
 
         # Set the required cookies, if any
-        self.cookieJar = CookieJar(self.cookies, qtUrl)
-        self._page.networkAccessManager().setCookieJar(self.cookieJar)
+        self.cookieJar = CookieJar(self.cookies, qt_url)
+        self._qt_network_access_manager.setCookieJar(self.cookieJar)
 
         # Load the page
         if type(res) == tuple:
-            self._page.mainFrame().setHtml(res[0], qtUrl) # HTML, baseUrl
+            self._page.setHtml(res[0], qt_url)  # HTML, baseUrl
         else:
-            self._page.mainFrame().load(qtUrl)
+            self._page.load(qt_url)
 
         while self.__loading:
-            if timeout > 0 and time.time() >= cancelAt:
-                raise RuntimeError("Request timed out on %s" % res)
+            if timeout > 0 and time.time() >= cancel_at:
+                raise RuntimeError("Request timed out on {}".format(res))
             while QApplication.hasPendingEvents() and self.__loading:
                 QCoreApplication.processEvents()
 
-        if self.logger: self.logger.debug("Processing result")
+        if self.logger:
+            self.logger.debug("Processing result")
 
-        if self.__loading_result == False:
-            if self.logger: self.logger.warning("Failed to load %s" % res)
+        if not self.__loading_result:
+            if self.logger:
+                self.logger.warning("Failed to load {}".format(res))
 
         # Set initial viewport (the size of the "window")
-        size = self._page.mainFrame().contentsSize()
-        if self.logger: self.logger.debug("contentsSize: %s", size)
+        size = self._page.contentsSize()
+        if self.logger:
+            self.logger.debug("contentsSize: %s", size)
         if width > 0:
             size.setWidth(width)
         if height > 0:
             size.setHeight(height)
 
-        self._window.resize(size)
+        self._window.resize(size.toSize())
 
-    def _post_process_image(self, qImage):
+    def _post_process_image(self, q_image):
         """
         If 'scaleToWidth' or 'scaleToHeight' are set to a value
         greater than zero this method will scale the image
@@ -323,52 +361,64 @@ class _WebkitRendererHelper(QObject):
                 ratio = Qt.KeepAspectRatio
             elif self.scaleRatio in ['expand', 'crop']:
                 ratio = Qt.KeepAspectRatioByExpanding
-            else: # 'ignore'
+            else:  # 'ignore'
                 ratio = Qt.IgnoreAspectRatio
-            qImage = qImage.scaled(self.scaleToWidth, self.scaleToHeight, ratio, Qt.SmoothTransformation)
+            q_image = q_image.scaled(self.scaleToWidth, self.scaleToHeight, ratio, Qt.SmoothTransformation)
             if self.scaleRatio == 'crop':
-                qImage = qImage.copy(0, 0, self.scaleToWidth, self.scaleToHeight)
-        return qImage
+                q_image = q_image.copy(0, 0, self.scaleToWidth, self.scaleToHeight)
+        return q_image
 
-    def _on_each_reply(self,reply):
-      """
-      Logs each requested uri
-      """
-      self.logger.debug("Received %s" % (reply.url().toString()))
+    @pyqtSlot(QNetworkReply, name='finished')
+    def _on_each_reply(self, reply):
+        """
+        Logs each requested uri
+        """
+        self.logger.debug("Received {}".format(reply.url().toString()))
 
-    # Eventhandler for "loadStarted()" signal
+    # Event for "loadStarted()" signal
+    @pyqtSlot(name='loadStarted')
     def _on_load_started(self):
         """
         Slot that sets the '__loading' property to true
         """
-        if self.logger: self.logger.debug("loading started")
+        if self.logger:
+            self.logger.debug("loading started")
         self.__loading = True
 
-    # Eventhandler for "loadFinished(bool)" signal
+    # Event for "loadFinished(bool)" signal
+    @pyqtSlot(bool, name='loadFinished')
     def _on_load_finished(self, result):
-        """Slot that sets the '__loading' property to false and stores
+        """
+        Slot that sets the '__loading' property to false and stores
         the result code in '__loading_result'.
         """
-        if self.logger: self.logger.debug("loading finished with result %s", result)
+        if self.logger:
+            self.logger.debug("loading finished with result %s", result)
         self.__loading = False
         self.__loading_result = result
 
-    # Eventhandler for "sslErrors(QNetworkReply *,const QList<QSslError>&)" signal
+    # Event for "sslErrors(QNetworkReply *,const QList<QSslError>&)" signal
+    @pyqtSlot('QNetworkReply*', 'QList<QSslError>', name='sslErrors')
     def _on_ssl_errors(self, reply, errors):
         """
         Slot that writes SSL warnings into the log but ignores them.
         """
         for e in errors:
-            if self.logger: self.logger.warn("SSL: " + e.errorString())
+            if self.logger:
+                self.logger.warn("SSL: " + e.errorString())
         reply.ignoreSslErrors()
 
+    @property
+    def window(self):
+        return self._window
 
-class CustomWebPage(QWebPage):
+
+class CustomWebPage(QWebEnginePage):
     def __init__(self, **kwargs):
-    	"""
-    	Class Initializer
-    	"""
-        super(CustomWebPage, self).__init__()
+        """
+        Class Initializer
+        """
+        super().__init__()
         self.logger = kwargs.get('logger', None)
         self.ignore_alert = kwargs.get('ignore_alert', True)
         self.ignore_confirm = kwargs.get('ignore_confirm', True)
@@ -376,38 +426,41 @@ class CustomWebPage(QWebPage):
         self.interrupt_js = kwargs.get('interrupt_js', True)
 
     def javaScriptAlert(self, frame, message):
-        if self.logger: self.logger.debug('Alert: %s', message)
+        if self.logger:
+            self.logger.debug('Alert: {}'.format(message))
         if not self.ignore_alert:
-            return super(CustomWebPage, self).javaScriptAlert(frame, message)
+            return super().javaScriptAlert(frame, message)
 
     def javaScriptConfirm(self, frame, message):
-        if self.logger: self.logger.debug('Confirm: %s', message)
+        if self.logger:
+            self.logger.debug('Confirm: {}'.format(message))
         if not self.ignore_confirm:
-            return super(CustomWebPage, self).javaScriptConfirm(frame, message)
+            return super().javaScriptConfirm(frame, message)
         else:
             return False
 
-    def javaScriptPrompt(self, frame, message, default, result):
+    def javaScriptPrompt(self, frame, message, result):
         """
         This function is called whenever a JavaScript program running inside frame tries to prompt
         the user for input. The program may provide an optional message, msg, as well as a default value
         for the input in defaultValue.
-
         If the prompt was cancelled by the user the implementation should return false;
         otherwise the result should be written to result and true should be returned.
         If the prompt was not cancelled by the user, the implementation should return true and
         the result string must not be null.
         """
-        if self.logger: self.logger.debug('Prompt: %s (%s)' % (message, default))
+        if self.logger:
+            self.logger.debug('Prompt: {}'.format(message))
         if not self.ignore_prompt:
-            return super(CustomWebPage, self).javaScriptPrompt(frame, message, default, result)
+            return super().javaScriptPrompt(frame, message, result)
         else:
             return False
 
-    def shouldInterruptJavaScript(self):
+    def should_interrupt_javascript(self):
         """
         This function is called when a JavaScript program is running for a long period of time.
         If the user wanted to stop the JavaScript the implementation should return true; otherwise false.
         """
-        if self.logger: self.logger.debug("WebKit ask to interrupt JavaScript")
+        if self.logger:
+            self.logger.debug("WebKit ask to interrupt JavaScript")
         return self.interrupt_js
