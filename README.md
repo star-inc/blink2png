@@ -21,11 +21,11 @@ Python script that takes screenshots (browsershots) using webkit
 - Install with: ``python3 python-webkit2png/setup.py install``
 
 ### FreeBSD
-- install qt4 webkit: ```www/py-qt5-webkit, www/qt5-webkit, devel/py-qt5```
+- install qt5 webkit: ```www/py-qt5-webkit, www/qt5-webkit, devel/py-qt5```
 - install pip: ``devel/py-pip``
 - install via: ``pip install webkit2png``
 
 ## Usage
-- For help run: ``python3 webkit2png -h``
+- For help run: ``python3 -m webkit2png -h``
 
 ![Alt Text](http://24.media.tumblr.com/tumblr_m9trixXFHn1rxlmf0o1_400.gif)
