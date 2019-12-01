@@ -27,7 +27,7 @@ import _io
 import os
 import time
 
-import PyQt5.sip as sip
+from PyQt5 import sip
 from PyQt5.QtCore import QObject, QUrl, Qt, QCoreApplication, QByteArray, QBuffer, pyqtSlot
 from PyQt5.QtGui import QPalette, QImage, QColor, QPainter, QGuiApplication
 from PyQt5.QtNetwork import QNetworkCookieJar, QNetworkCookie, QNetworkProxy, QNetworkAccessManager, QNetworkReply
