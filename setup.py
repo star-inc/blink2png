@@ -15,7 +15,7 @@ setup(
     description=description,
     long_description=long_description,
     author='Star Inc.',
-    author_email='star-inc(at)aol.com',
+    author_email='"Star Inc." <star-inc＠aol.com>',
     packages=['blink2png'],
     zip_safe=True,
     include_package_data=True,
