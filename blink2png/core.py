@@ -1,28 +1,3 @@
-#
-# webkit2png.py
-#
-# Creates screenshots of webpages using by QtWebkit.
-#
-# Copyright (c) 2014 Roland Tapken <roland@dau-sicher.de>
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
-#
-# Nice ideas "todo":
-#  - Add QTcpSocket support to create a "screenshot daemon" that
-#    can handle multiple requests at the same time.
-
 import _io
 import os
 import time
@@ -39,7 +14,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QAbstractScrollArea
 # requires a running QtGui to work.
 
 
-class WebkitRenderer(QObject):
+class WebEngineRenderer(QObject):
     """
     A class that helps to create 'screenshots' of web pages using
     Requires PyQt5 library.
@@ -53,10 +28,11 @@ class WebkitRenderer(QObject):
         Sets default values for the properties.
         """
 
+        self.app = QApplication([])
+
         # QT Initialize
-        if not QApplication.instance():
-            raise RuntimeError(self.__class__.__name__ +
-                               " requires a running QApplication instance")
+        if not self.app.instance():
+            raise RuntimeError(self.__class__.__name__ + " requires a running QApplication instance")
         QObject.__init__(self)
 
         # Initialize default properties
@@ -96,7 +72,7 @@ class WebkitRenderer(QObject):
         # We have to use this helper object because
         # QApplication.processEvents may be called, causing
         # this method to get called while it has not returned yet.
-        helper = _WebkitRendererHelper(self)
+        helper = _WebEngineRendererHelper(self)
         helper.window.resize(self.width, self.height)
         image = helper.render(res)
 
@@ -112,12 +88,14 @@ class WebkitRenderer(QObject):
         Renders the image into a File resource.
         Returns the size of the data that has been written.
         """
-        assert type(file_object) is _io.BufferedRandom, "Not a file object"
         qt_format = self.format  # this may not be constant due to processEvents()
         image = self.render(res)
         q_buffer = QBuffer()
         image.save(q_buffer, qt_format)
-        file_object.write(q_buffer.buffer().data())
+        output = q_buffer.buffer().data()
+        if not type(file_object) is _io.BufferedRandom:
+            output = str(output)
+        file_object.write(output)
         return q_buffer.size()
 
     def render_to_bytes(self, res):
@@ -144,16 +122,16 @@ class CookieJar(QNetworkCookieJar):
         QNetworkCookieJar.setAllCookies(self, cookie1_list)
 
 
-class _WebkitRendererHelper(QObject):
+class _WebEngineRendererHelper(QObject):
     """
     This helper class is doing the real work. It is required to
-    allow WebkitRenderer.render() to be called "asynchronously"
+    allow WebEngineRenderer.render() to be called "asynchronously"
     (but always from Qt's GUI thread).
     """
 
     def __init__(self, parent):
         """
-        Copies the properties from the parent (WebkitRenderer) object,
+        Copies the properties from the parent (WebEngineRenderer) object,
         creates the required instances of QWebPage, QWebView and QMainWindow
         and registers some Slots.
         """

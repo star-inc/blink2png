@@ -2,21 +2,21 @@
 
 from setuptools import setup
 
-version = '0.9.0'
+version = '0.9'
 
-description = "Takes snapshot of web pages using Webkit and Qt5"
+description = "To take snapshot of web pages using Blink Engine and Qt5"
 long_description = description
 
 setup(
-    name="webkit2png",
+    name="blink2png",
     version=version,
-    url='http://github.com/AdamN/python-webkit2png',
-    license='GNU Lesser General Public License',
+    url='http://github.com/star-inc/blink2png',
+    license='GNU General Public License',
     description=description,
     long_description=long_description,
-    author='Roland Tapken',
-    author_email='roland at dau-sicher de',
-    packages=['webkit2png'],
+    author='Star Inc.',
+    author_email='star-inc(at)aol.com',
+    packages=['blink2png'],
     zip_safe=True,
     include_package_data=True,
     package_dir=[],
@@ -34,7 +34,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'webkit2png = webkit2png.scripts:main',
+            'blink2png = blink2png.__main__:main',
         ]
     }, install_requires=['PyQt5', 'PyQtWebEngine']
 )
