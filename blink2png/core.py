@@ -1,3 +1,8 @@
+# blink2png  Copyright (C) 2019 Star Inc.
+# This program comes with ABSOLUTELY NO WARRANTY; for details type 'show w'.
+# This is free software, and you are welcome to redistribute it
+# under certain conditions; type 'show c' for details.
+
 import _io
 import os
 import time
@@ -93,7 +98,7 @@ class WebEngineRenderer(QObject):
         q_buffer = QBuffer()
         image.save(q_buffer, qt_format)
         output = q_buffer.buffer().data()
-        if not type(file_object) is _io.BufferedRandom:
+        if type(file_object) is not _io.BufferedRandom:
             output = str(output)
         file_object.write(output)
         return q_buffer.size()
@@ -113,7 +118,9 @@ class CookieJar(QNetworkCookieJar):
         QNetworkCookieJar.__init__(self, parent)
         for cookie in cookies:
             QNetworkCookieJar.setCookiesFromUrl(
-                self, QNetworkCookie.parseCookies(QByteArray(cookie)), qt_url)
+                self, QNetworkCookie.parseCookies(QByteArray(cookie)),
+                qt_url
+            )
 
     def allCookies(self):
         return QNetworkCookieJar.allCookies(self)
@@ -215,8 +222,8 @@ class _WebEngineRendererHelper(QObject):
                 self.logger.debug("Waiting {} seconds ".format(self.wait))
             wait_to_time = time.time() + self.wait
             while time.time() < wait_to_time:
-                if QApplication.hasPendingEvents():
-                    QApplication.processEvents()
+                if self.app.hasPendingEvents():
+                    self.app.processEvents()
 
         if self.renderTransparentBackground:
             # Another possible drawing solution
@@ -239,7 +246,7 @@ class _WebEngineRendererHelper(QObject):
                 # window still has the focus when the screen is
                 # grabbed. This might result in a race condition.
                 self._view.activateWindow()
-                qt_screen = QGuiApplication.primaryScreen()
+                qt_screen = self.app.primaryScreen()
                 image = qt_screen.grabWindow(sip.voidptr(0))
             else:
                 image = self._window.grab()
@@ -286,8 +293,8 @@ class _WebEngineRendererHelper(QObject):
         while self.__loading:
             if timeout > 0 and time.time() >= cancel_at:
                 raise RuntimeError("Request timed out on {}".format(res))
-            while QApplication.hasPendingEvents() and self.__loading:
-                QCoreApplication.processEvents()
+            while self.app.hasPendingEvents() and self.__loading:
+                self.app.processEvents()
 
         if self.logger:
             self.logger.debug("Processing result")
