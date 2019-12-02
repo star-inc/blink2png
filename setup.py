@@ -4,16 +4,12 @@ from setuptools import setup
 
 version = '0.9'
 
-description = "To take snapshot of web pages using Blink Engine and Qt5"
-long_description = description
-
 setup(
     name="blink2png",
     version=version,
     url='http://github.com/star-inc/blink2png',
     license='GNU General Public License',
-    description=description,
-    long_description=long_description,
+    description="To take snapshot of web pages using Blink Engine and Qt5",
     author='Star Inc.',
     author_email='"Star Inc." <star-inc＠aol.com>',
     packages=['blink2png'],
@@ -24,10 +20,10 @@ setup(
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: GNU General Public License (GPL)',
+        'License :: OSI Approved :: GNU General Public License, version 3',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX',
-        'Programming Language :: Python',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Software Development :: Bug Tracking',
         'Topic :: Multimedia :: Graphics :: Capture :: Screen Capture',
         'Topic :: Utilities'
