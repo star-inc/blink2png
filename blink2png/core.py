@@ -18,8 +18,8 @@ import os
 import time
 
 from PyQt5 import sip
-from PyQt5.QtCore import QObject, QUrl, Qt, QCoreApplication, QByteArray, QBuffer, pyqtSlot
-from PyQt5.QtGui import QPalette, QImage, QColor, QPainter, QGuiApplication
+from PyQt5.QtCore import QObject, QUrl, Qt, QByteArray, QBuffer, pyqtSlot
+from PyQt5.QtGui import QPalette, QImage, QColor, QPainter
 from PyQt5.QtNetwork import QNetworkCookieJar, QNetworkCookie, QNetworkProxy, QNetworkAccessManager, QNetworkReply
 from PyQt5.QtWebEngineWidgets import QWebEngineSettings, QWebEnginePage, QWebEngineView
 from PyQt5.QtWidgets import QApplication, QMainWindow, QAbstractScrollArea

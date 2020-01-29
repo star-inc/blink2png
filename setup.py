@@ -4,7 +4,7 @@ from setuptools import setup
 
 from os import path
 this_directory = path.abspath(path.dirname(__file__))
-with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+with open(path.join(this_directory, 'docs', 'README.pypi.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 # blink2png  Copyright (C) 2019 Star Inc.
@@ -22,7 +22,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-version = '0.9b'
+version = '0.9.1'
 
 setup(
     name="blink2png",
@@ -30,7 +30,7 @@ setup(
     url='http://github.com/star-inc/blink2png',
     license='GNU General Public License',
     long_description=long_description,
-    long_description_content_type='text/markdown',
+    long_description_content_type="text/x-rst",
     description='To take snapshot of web pages using Blink Engine and Qt5',
     author='Star Inc.',
     author_email='"Star Inc." <star-inc@aol.com>',
@@ -39,7 +39,7 @@ setup(
     include_package_data=True,
     package_dir=[],
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 7 - Inactive',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
