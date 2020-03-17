@@ -22,7 +22,7 @@ with open(path.join(this_directory, 'docs', 'README.pypi.rst'), encoding='utf-8'
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-version = '0.9.1'
+version = '0.9.2'
 
 setup(
     name="blink2png",
@@ -33,7 +33,7 @@ setup(
     long_description_content_type="text/x-rst",
     description='To take snapshot of web pages using Blink Engine and Qt5',
     author='Star Inc.',
-    author_email='"Star Inc." <star-inc@aol.com>',
+    author_email='"Star Inc." <star_inc@aol.com>',
     packages=['blink2png'],
     zip_safe=True,
     include_package_data=True,
