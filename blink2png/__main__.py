@@ -100,7 +100,7 @@ def main():
         "--geometry",
         dest="geometry",
         nargs=2,
-        default=(0, 0),
+        default=(1024, 600),
         type="int",
         help="Geometry of the virtual browser window (0 means 'autodetect') [default: %default].",
         metavar="WIDTH HEIGHT"
@@ -109,7 +109,7 @@ def main():
     parser.add_option(
         "-o", "--output",
         dest="output",
-        help="Write output to FILE instead of STDOUT.",
+        help="Set output filename [default: capture.png] or using stdout [type: \"stdout\" only]",
         metavar="FILE"
     )
 
@@ -153,7 +153,8 @@ def main():
         "-c", "--cookie",
         dest="cookies",
         action="append",
-        help="Add this cookie. Use multiple times for more cookies. Specification is value of a Set-Cookie HTTP response header.",
+        help="Add this cookie. "
+             "Use multiple times for more cookies. Specification is value of a Set-Cookie HTTP response header.",
         metavar="COOKIE"
     )
 
@@ -269,9 +270,11 @@ def main():
 
     # Prepare output ("1" means STDOUT)
     if options.output is None:
+        options.output = open("capture.png", "wb+")
+    elif options.output == "stdout":
         options.output = sys.stdout
     else:
-        options.output = open(options.output, "wb+")
+        options.output = open(str(options.output), "wb+")
 
     logger.debug("Version %s, Python %s, Qt %s", VERSION, sys.version, qVersion())
 

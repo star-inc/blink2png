@@ -128,15 +128,16 @@ class CookieJar(QNetworkCookieJar):
         QNetworkCookieJar.__init__(self, parent)
         for cookie in cookies:
             QNetworkCookieJar.setCookiesFromUrl(
-                self, QNetworkCookie.parseCookies(QByteArray(cookie)),
+                self,
+                QNetworkCookie().parseCookies(QByteArray(cookie)),
                 qt_url
             )
 
     def allCookies(self):
         return QNetworkCookieJar.allCookies(self)
 
-    def setAllCookies(self, cookie1_list):
-        QNetworkCookieJar.setAllCookies(self, cookie1_list)
+    def setAllCookies(self, cookie_list, network_cookie=None):
+        QNetworkCookieJar.setAllCookies(self, cookie_list, network_cookie)
 
 
 class _WebEngineRendererHelper(QObject):
@@ -183,7 +184,8 @@ class _WebEngineRendererHelper(QObject):
         self._qt_proxy.setApplicationProxy(proxy)
         self._view = QWebEngineView()
         self._view.setPage(self._page)
-        self._window = QMainWindow()
+        _window_flags = Qt.WindowFlags()
+        self._window = QMainWindow(flags=_window_flags)
         self._window.setCentralWidget(self._view)
         self._qt_network_access_manager = QNetworkAccessManager()
 
@@ -286,7 +288,7 @@ class _WebEngineRendererHelper(QObject):
             url = res
 
         if self.encodedUrl:
-            qt_url = QUrl.fromEncoded(url)
+            qt_url = QUrl().fromEncoded(url)
         else:
             qt_url = QUrl(url)
 

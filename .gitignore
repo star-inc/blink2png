@@ -1,3 +1,6 @@
+# Default output filename
+capture.png
+
 # Compiled files
 *.py[cod]
 
