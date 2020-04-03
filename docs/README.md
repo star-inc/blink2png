@@ -37,6 +37,6 @@ Important: Must upgrade ``pip`` to latest version prevent from error while insta
 
 ## Thanks for
 - Origin: [All the contributors](AUTHORS.md)
-- According License: [GPL 3.0](LICENSE.md)
+- According License: [GPL 3.0](../LICENSE.md)
 
 > (c) 2020 [Star Inc.](https://starinc.xyz/)
