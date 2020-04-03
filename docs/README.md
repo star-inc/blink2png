@@ -22,7 +22,7 @@ It is used in Chrome and more the Chromium Core Projects.
 - Add following packages: ``apt-get install libqt5core5a python3-pip``
 
 #### Automated installation via ```pip```
-- Install webkit2png: ```pip3 install blink2png```
+- Install blink2png: ```pip3 install blink2png```
 
 #### Manual installation via Git
 - Install git: ``apt-get install git``
