@@ -22,7 +22,7 @@ with open(path.join(this_directory, 'docs', 'README.pypi.rst'), encoding='utf-8'
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-version = '0.9.2'
+version = '0.9.3'
 
 setup(
     name="blink2png",

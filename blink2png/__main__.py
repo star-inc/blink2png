@@ -72,7 +72,7 @@ def main():
 
     # Parse command line arguments.
     # Syntax:
-    # $0 [--xvfb|--display=DISPLAY] [--debug] [--output=FILENAME] <URL>
+    # $0 [--display=DISPLAY] [--debug] [--output=FILENAME] <URL>
 
     description = "Creates a snapshot of a website using QtWebEngine." \
                   + "This program comes with ABSOLUTELY NO WARRANTY. " \
@@ -84,15 +84,6 @@ def main():
         version="%prog " + VERSION + ", Copyright (c) Star Inc.",
         description=description,
         add_help_option=True
-    )
-
-    parser.add_option(
-        "-x", "--xvfb",
-        nargs=2,
-        type="int",
-        dest="xvfb",
-        help="Start an 'xvfb' instance with the given desktop size.",
-        metavar="WIDTH HEIGHT"
     )
 
     parser.add_option(
@@ -237,8 +228,6 @@ def main():
     (options, args) = parser.parse_args()
     if len(args) != 1:
         parser.error("incorrect number of arguments")
-    if options.display and options.xvfb:
-        parser.error("options -x and -d are mutually exclusive")
     options.url = args[0]
 
     logging.basicConfig(filename=options.logfile, level=logging.WARN, )
@@ -246,27 +235,6 @@ def main():
     # Enable output of debugging information
     if options.debug:
         logger.setLevel(logging.DEBUG)
-
-    if options.xvfb:
-        # Start 'xvfb' instance by replacing the current process
-        server_num = int(os.getpid() + 1e6)
-        newArgs = ["xvfb-run", "--auto-servernum", "--server-num", str(server_num),
-                   "--server-args=-screen 0, %dx%dx24" % options.xvfb, sys.argv[0]]
-        skipArgs = 0
-        for i in range(1, len(sys.argv)):
-            if skipArgs > 0:
-                skipArgs -= 1
-            elif sys.argv[i] in ["-x", "--xvfb"]:
-                skipArgs = 2  # following: width and height
-            else:
-                newArgs.append(sys.argv[i])
-        logger.debug("Executing %s" % " ".join(newArgs))
-        try:
-            os.execvp(newArgs[0], newArgs[1:])
-        except OSError:
-            logger.error("Unable to find '%s'" % newArgs[0])
-            sys.stderr.write("Error - Unable to find '{}' for -x/--xvfb option".format(newArgs[0]))
-            sys.exit(1)
 
     # Prepare output ("1" means STDOUT)
     if options.output is None:
