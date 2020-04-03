@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# blink2png  Copyright (C) 2019 Star Inc.
+# blink2png  Copyright (C) 2020  Star Inc.
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
