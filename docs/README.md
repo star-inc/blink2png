@@ -18,6 +18,8 @@ It is used in Chrome and more the Chromium Core Projects.
 
 ## Installation
 
+Important: Must upgrade ``pip`` to latest version prevent from error while install PyQt5
+
 ### Debian/Ubuntu
 - Add following packages: ``apt-get install libqt5core5a python3-pip``
 
